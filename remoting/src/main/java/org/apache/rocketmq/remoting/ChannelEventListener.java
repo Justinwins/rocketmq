@@ -17,7 +17,7 @@
 package org.apache.rocketmq.remoting;
 
 import io.netty.channel.Channel;
-
+/** remoting模块是个通用的模块,为了不让具体的业务代码侵入进来,提供了 Listener  这样的回调接口*/
 public interface ChannelEventListener {
     void onChannelConnect(final String remoteAddr, final Channel channel);
 

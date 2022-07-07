@@ -451,6 +451,7 @@ public class MessageDecoder {
         if (properties != null) {
             int len = properties.length();
             int index = 0;
+            /** 注意: 这里的 PROPERTY_SEPARATOR 是个字符*/
             while (index < len) {
                 int newIndex = properties.indexOf(PROPERTY_SEPARATOR, index);
                 if (newIndex < 0) {

@@ -63,7 +63,7 @@ public class RemotingHelper {
         InetSocketAddress isa = new InetSocketAddress(host, Integer.parseInt(port));
         return isa;
     }
-
+    /** 作为客户端这样主动去连服务端....这个方法有点准确说像是测试类*/
     public static RemotingCommand invokeSync(final String addr, final RemotingCommand request,
         final long timeoutMillis) throws InterruptedException, RemotingConnectException,
         RemotingSendRequestException, RemotingTimeoutException, RemotingCommandException {
@@ -74,7 +74,7 @@ public class RemotingHelper {
             boolean sendRequestOK = false;
 
             try {
-
+                /** 注意: 阻塞*/
                 socketChannel.configureBlocking(true);
 
                 //bugfix  http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4614802

@@ -64,7 +64,9 @@ public class NamesrvController {
         this.namesrvConfig = namesrvConfig;
         this.nettyServerConfig = nettyServerConfig;
         this.kvConfigManager = new KVConfigManager(this);
+        /** !!!核心数据结构, 各种路由信息都存储在这里*/
         this.routeInfoManager = new RouteInfoManager();
+        /** !!! Broker大扫除 */
         this.brokerHousekeepingService = new BrokerHousekeepingService(this);
         this.configuration = new Configuration(
             log,
@@ -75,13 +77,16 @@ public class NamesrvController {
 
     public boolean initialize() {
 
+        /** 从 user.home 下拿 kvConfig.json 配置*/
         this.kvConfigManager.load();
 
+        /** 初始化了一个netty server */
         this.remotingServer = new NettyRemotingServer(this.nettyServerConfig, this.brokerHousekeepingService);
 
+        /** !!! name server的工作线程数*/
         this.remotingExecutor =
             Executors.newFixedThreadPool(nettyServerConfig.getServerWorkerThreads(), new ThreadFactoryImpl("RemotingExecutorThread_"));
-
+        /** 注册处理器*/
         this.registerProcessor();
 
         this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {

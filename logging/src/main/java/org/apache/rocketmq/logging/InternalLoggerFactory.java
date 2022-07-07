@@ -59,12 +59,13 @@ public abstract class InternalLoggerFactory {
     public static void setCurrentLoggerType(String type) {
         loggerType = type;
     }
-
+    /** 这里拿着两个子类作 初始化*/
     static {
         try {
             new Slf4jLoggerFactory();
         } catch (Throwable e) {
             //ignore
+            e.printStackTrace();
         }
         try {
             new InnerLoggerFactory();

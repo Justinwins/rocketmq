@@ -51,7 +51,7 @@ public abstract class ServiceThread implements Runnable {
         synchronized (this) {
             if (!this.hasNotified) {
                 this.hasNotified = true;
-                this.notify();
+                this.notify(); //??? NotifyAll () ?
             }
         }
 
@@ -61,7 +61,7 @@ public abstract class ServiceThread implements Runnable {
             }
 
             long beginTime = System.currentTimeMillis();
-            this.thread.join(this.getJointime());
+            this.thread.join(this.getJointime()); //90s at most
             long elapsedTime = System.currentTimeMillis() - beginTime;
             log.info("join thread " + this.getServiceName() + " elapsed time(ms) " + elapsedTime + " "
                 + this.getJointime());

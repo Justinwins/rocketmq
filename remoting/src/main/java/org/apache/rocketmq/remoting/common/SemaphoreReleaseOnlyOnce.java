@@ -18,7 +18,7 @@ package org.apache.rocketmq.remoting.common;
 
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
-
+/** !!! 只release 一次的 Semaphore*/
 public class SemaphoreReleaseOnlyOnce {
     private final AtomicBoolean released = new AtomicBoolean(false);
     private final Semaphore semaphore;
@@ -27,6 +27,7 @@ public class SemaphoreReleaseOnlyOnce {
         this.semaphore = semaphore;
     }
 
+    /** ??? 意思是 不会被并发地给 release() */
     public void release() {
         if (this.semaphore != null) {
             if (this.released.compareAndSet(false, true)) {

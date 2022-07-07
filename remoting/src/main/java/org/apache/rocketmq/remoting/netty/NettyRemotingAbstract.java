@@ -52,6 +52,7 @@ import org.apache.rocketmq.remoting.exception.RemotingTooMuchRequestException;
 import org.apache.rocketmq.remoting.protocol.RemotingCommand;
 import org.apache.rocketmq.remoting.protocol.RemotingSysResponseCode;
 
+/** NettyRemotingAbstract是对 netty server和netty client通用部分的抽象 */
 public abstract class NettyRemotingAbstract {
 
     /**
@@ -78,6 +79,7 @@ public abstract class NettyRemotingAbstract {
     /**
      * This container holds all processors per request code, aka, for each incoming request, we may look up the
      * responding processor in this map to handle the request.
+     * 这里确实没有多线程的问题
      */
     protected final HashMap<Integer/* request code */, Pair<NettyRequestProcessor, ExecutorService>> processorTable =
         new HashMap<Integer, Pair<NettyRequestProcessor, ExecutorService>>(64);
@@ -102,7 +104,7 @@ public abstract class NettyRemotingAbstract {
      */
     protected List<RPCHook> rpcHooks = new ArrayList<RPCHook>();
 
-
+    /** !!! 初始化 Logger*/
     static {
         NettyLogger.initNettyLogger();
     }
@@ -192,7 +194,7 @@ public abstract class NettyRemotingAbstract {
     public void processRequestCommand(final ChannelHandlerContext ctx, final RemotingCommand cmd) {
         final Pair<NettyRequestProcessor, ExecutorService> matched = this.processorTable.get(cmd.getCode());
         final Pair<NettyRequestProcessor, ExecutorService> pair = null == matched ? this.defaultRequestProcessor : matched;
-        final int opaque = cmd.getOpaque();
+        final int opaque = cmd.getOpaque(); /**!!! 这个是响应给caller,用来关联到请求的.*/
 
         if (pair != null) {
             Runnable run = new Runnable() {
@@ -251,6 +253,7 @@ public abstract class NettyRemotingAbstract {
                 return;
             }
 
+            /** !!! 处理请求.注意是哪个线程真正干这个活的*/
             try {
                 final RequestTask requestTask = new RequestTask(run, ctx.channel(), cmd);
                 pair.getObject2().submit(requestTask);
@@ -307,6 +310,8 @@ public abstract class NettyRemotingAbstract {
 
     /**
      * Execute callback in callback executor. If callback executor is null, run directly in current thread
+     *
+     * ??? 就这样短平快换成 caller thread 去执行了?
      */
     private void executeInvokeCallback(final ResponseFuture responseFuture) {
         boolean runInThisThread = false;
@@ -464,6 +469,7 @@ public abstract class NettyRemotingAbstract {
             final ResponseFuture responseFuture = new ResponseFuture(channel, opaque, timeoutMillis - costTime, invokeCallback, once);
             this.responseTable.put(opaque, responseFuture);
             try {
+                /** 注意listener 是个回调*/
                 channel.writeAndFlush(request).addListener(new ChannelFutureListener() {
                     @Override
                     public void operationComplete(ChannelFuture f) throws Exception {
@@ -569,6 +575,7 @@ public abstract class NettyRemotingAbstract {
         private final LinkedBlockingQueue<NettyEvent> eventQueue = new LinkedBlockingQueue<NettyEvent>();
         private final int maxSize = 10000;
 
+        //??? 这里的代码有风险 , 不应这样写
         public void putNettyEvent(final NettyEvent event) {
             int currentSize = this.eventQueue.size();
             if (currentSize <= maxSize) {

@@ -80,6 +80,7 @@ public class NamesrvStartup {
         }
 
         final NamesrvConfig namesrvConfig = new NamesrvConfig();
+        /** Netty server*/
         final NettyServerConfig nettyServerConfig = new NettyServerConfig();
         nettyServerConfig.setListenPort(9876);
         if (commandLine.hasOption('c')) {
@@ -112,6 +113,7 @@ public class NamesrvStartup {
             System.exit(-2);
         }
 
+        /** !!!Logger 配置. 怪不得 resources 下面没有 logback.xml, 原来是代码直接指定了 */
         LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
         JoranConfigurator configurator = new JoranConfigurator();
         configurator.setContext(lc);
@@ -120,6 +122,7 @@ public class NamesrvStartup {
 
         log = InternalLoggerFactory.getLogger(LoggerName.NAMESRV_LOGGER_NAME);
 
+        /** 使用 log 记录了下 nameserver nettyserver的配置信息*/
         MixAll.printObjectProperties(log, namesrvConfig);
         MixAll.printObjectProperties(log, nettyServerConfig);
 
@@ -150,7 +153,7 @@ public class NamesrvStartup {
                 return null;
             }
         }));
-
+        /** controller 启动入口*/
         controller.start();
 
         return controller;
