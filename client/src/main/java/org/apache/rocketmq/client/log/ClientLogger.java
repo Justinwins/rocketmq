@@ -45,7 +45,7 @@ public class ClientLogger {
     private static final boolean CLIENT_USE_SLF4J;
 
     //private static Appender rocketmqClientAppender = null;
-
+    /** 也可以看到, rocket mq提供了2套日志,一套是 slf4j 一套是 Inner. 使用-D来决定.*/
     static {
         CLIENT_USE_SLF4J = Boolean.parseBoolean(System.getProperty(CLIENT_LOG_USESLF4J, "false"));
         if (!CLIENT_USE_SLF4J) {
@@ -58,6 +58,7 @@ public class ClientLogger {
         }
     }
 
+    /** ???client 只有file appender 没有console appender , 唉....*/
     private static synchronized Appender createClientAppender() {
         String clientLogRoot = System.getProperty(CLIENT_LOG_ROOT, System.getProperty("user.home") + "/logs/rocketmqlogs");
         String clientLogMaxIndex = System.getProperty(CLIENT_LOG_MAXINDEX, "10");
@@ -75,8 +76,14 @@ public class ClientLogger {
         Appender rocketmqClientAppender = LoggingBuilder.newAppenderBuilder()
             .withRollingFileAppender(logFileName, maxFileSize, maxFileIndex)
             .withAsync(false, queueSize).withName(ROCKETMQ_CLIENT_APPENDER_NAME).withLayout(layout).build();
-
+        /** 还会给 root logger 关联上 rocketmqClientAppender*/
         Logger.getRootLogger().addAppender(rocketmqClientAppender);
+
+//        Appender consoleAppender = LoggingBuilder.newAppenderBuilder().withConsoleAppender(SYSTEM_OUT)
+//                .withLayout(new LoggingBuilder.SimpleLayout())
+//                .withName("ConsoleAppender").build();
+//        Logger.getRootLogger().addAppender(consoleAppender);
+
         return rocketmqClientAppender;
     }
 
@@ -90,7 +97,7 @@ public class ClientLogger {
         //if (rocketmqClientAppender == null) {
         //   createClientAppender();
         //}
-
+        /**???*/
         realLogger.addAppender(new AppenderProxy());
         realLogger.setLevel(Level.toLevel(clientLogLevel));
         realLogger.setAdditivity(additive);
@@ -107,7 +114,7 @@ public class ClientLogger {
         @Override
         protected void append(LoggingEvent event) {
             if (null == proxy) {
-                proxy = ClientLogger.createClientAppender();
+                proxy = ClientLogger.createClientAppender(); /** 这个是真正有用的 appender .为啥不考虑并发安全???*/
             }
             proxy.doAppend(event);
         }

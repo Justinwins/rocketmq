@@ -36,6 +36,7 @@ public class ThreadFactoryImpl implements ThreadFactory {
 
     @Override
     public Thread newThread(Runnable r) {
+        /** 要非常小心, Runnable 必须要作为一个参数传进去*/
         Thread thread = new Thread(r, threadNamePrefix + this.threadIndex.incrementAndGet());
         thread.setDaemon(daemon);
         return thread;

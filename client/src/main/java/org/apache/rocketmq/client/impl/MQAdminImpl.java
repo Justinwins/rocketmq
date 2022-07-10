@@ -98,10 +98,10 @@ public class MQAdminImpl {
                     String addr = brokerData.getBrokerAddrs().get(MixAll.MASTER_ID);
                     if (addr != null) {
                         TopicConfig topicConfig = new TopicConfig(newTopic);
-                        topicConfig.setReadQueueNums(queueNum);
-                        topicConfig.setWriteQueueNums(queueNum);
-                        topicConfig.setTopicSysFlag(topicSysFlag);
-
+                        topicConfig.setReadQueueNums(queueNum); // 读Q数量
+                        topicConfig.setWriteQueueNums(queueNum); // 写Q数量
+                        topicConfig.setTopicSysFlag(topicSysFlag); // 是不是rocket 内部用的topic
+                        /** 写死快速重试 5 次*/
                         boolean createOK = false;
                         for (int i = 0; i < 5; i++) {
                             try {
@@ -128,6 +128,9 @@ public class MQAdminImpl {
                 if (exception != null && !createOKAtLeastOnce) {
                     throw exception;
                 }
+                log.info("create topic ok or the topic has existed,with key [{}],topic [{}], queueNum [{}].Its brokerName-queueNum details are {}",
+                        key, newTopic, queueNum, orderTopicString);
+
             } else {
                 throw new MQClientException("Not found broker, maybe key is wrong", null);
             }
